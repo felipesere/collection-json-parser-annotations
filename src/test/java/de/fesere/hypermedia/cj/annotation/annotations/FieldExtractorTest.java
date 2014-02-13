@@ -70,9 +70,6 @@ public class FieldExtractorTest {
                                 .addData(DataEntryFactory.create("isAdmin", true))
                                 .addData(DataEntryFactory.create("someValue", 1.23)).build();
 
-
-
-
         NullPerson p = extractor.createInstance(NullPerson.class, item.extractDataMap());
         assertThat(p, is(notNullValue()));
         assertThat(p.getAge(), is(12));

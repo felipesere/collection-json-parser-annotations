@@ -12,10 +12,10 @@ import java.util.Map;
 public class FieldExtractor {
 
     public List<Field> annotatedFieldsFromType(Class type, Class annotation) {
-        if(isObjectType(type)) {
+        if (isObjectType(type)) {
             return Collections.emptyList();
         }
-        Field[] fields =  type.getDeclaredFields();
+        Field[] fields = type.getDeclaredFields();
         List<Field> result = filterFieldsWithAnnotation(fields, annotation);
 
         result.addAll(annotatedFieldsFromType(type.getSuperclass(), annotation));
@@ -24,7 +24,8 @@ public class FieldExtractor {
     }
 
     private List<Field> filterFieldsWithAnnotation(Field[] fields, Class annotation) {
-        List<Field> result = new LinkedList<>(); for(Field field : fields) {
+        List<Field> result = new LinkedList<>();
+        for (Field field : fields) {
             Object obj = field.getAnnotation(annotation);
             if (obj != null) {
                 result.add(field);
@@ -42,7 +43,7 @@ public class FieldExtractor {
 
         Constructor annotatedConstructors = filterByAnnotation(constructorCandidates, annotation);
 
-        if(annotatedConstructors == null) {
+        if (annotatedConstructors == null) {
             annotatedConstructors = findAnnotatedConstructor(type.getSuperclass(), annotation);
         }
 
@@ -50,9 +51,9 @@ public class FieldExtractor {
     }
 
     private Constructor filterByAnnotation(Constructor[] constructorCandidates, Class annotation) {
-        for(Constructor constructor : constructorCandidates) {
+        for (Constructor constructor : constructorCandidates) {
 
-            if(hasAnnotatedParameters(constructor, annotation)) {
+            if (hasAnnotatedParameters(constructor, annotation)) {
                 return constructor;
             }
         }
@@ -61,13 +62,13 @@ public class FieldExtractor {
     }
 
     private boolean hasAnnotatedParameters(Constructor constructor, Class annotation) {
-        for(Annotation[] parameterAnnoatations : constructor.getParameterAnnotations()) {
+        for (Annotation[] parameterAnnoatations : constructor.getParameterAnnotations()) {
 
-           for(Annotation anno : parameterAnnoatations) {
-               if(anno.annotationType().equals(annotation)) {
-                   return true;
-               }
-           }
+            for (Annotation anno : parameterAnnoatations) {
+                if (anno.annotationType().equals(annotation)) {
+                    return true;
+                }
+            }
         }
 
         return false;
@@ -80,31 +81,29 @@ public class FieldExtractor {
 
         Object[] parameterValues = getValuesInOrder(parameterNames, values);
 
-
         return constructor.newInstance(parameterValues);
     }
 
     private Object[] getValuesInOrder(List<String> parameterNames, Map<String, Object> values) {
         Object[] result = new Object[parameterNames.size()];
-        for(int i = 0; i < parameterNames.size(); i++) {
+        for (int i = 0; i < parameterNames.size(); i++) {
             result[i] = values.get(parameterNames.get(i));
         }
-
         return result;
     }
 
     private <T> List<String> getOrderedListOfAnnotatedParameters(Constructor<T> constructor, Class<Data> dataClass) {
         List<String> result = new LinkedList<>();
-        for(Annotation[] parameterAnnotations : constructor.getParameterAnnotations() ) {
+        for (Annotation[] parameterAnnotations : constructor.getParameterAnnotations()) {
             Data data = null;
-            for(Annotation annotation : parameterAnnotations) {
-                if(annotation.annotationType().equals(dataClass)) {
+            for (Annotation annotation : parameterAnnotations) {
+                if (annotation.annotationType().equals(dataClass)) {
                     data = (Data) annotation;
                     break;
                 }
             }
 
-            if(data != null) {
+            if (data != null) {
                 result.add(data.name());
             }
         }
