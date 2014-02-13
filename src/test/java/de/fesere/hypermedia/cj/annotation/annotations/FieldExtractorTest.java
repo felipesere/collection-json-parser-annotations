@@ -1,0 +1,80 @@
+package de.fesere.hypermedia.cj.annotation.annotations;
+
+import de.fesere.hypermedia.cj.annotation.persons.BasePerson;
+import de.fesere.hypermedia.cj.annotation.persons.EmptyPerson;
+import de.fesere.hypermedia.cj.annotation.persons.NullPerson;
+import de.fesere.hypermedia.cj.annotations.Data;
+import de.fesere.hypermedia.cj.annotations.FieldExtractor;
+import de.fesere.hypermedia.cj.annotations.ItemConfig;
+import de.fesere.hypermedia.cj.model.Item;
+import de.fesere.hypermedia.cj.model.builder.DataEntryFactory;
+import de.fesere.hypermedia.cj.model.builder.ItemBuilder;
+import org.junit.Test;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.hamcrest.core.Is.is;
+
+public class FieldExtractorTest {
+
+    @Test
+    public void test_findingTheAnnotationReturnsList() {
+
+        FieldExtractor extractor = new FieldExtractor();
+        List<Field> result = extractor.annotatedFieldsFromType(BasePerson.class, Data.class);
+
+        assertThat(result, hasSize(7));
+    }
+
+    @Test
+    public void test_notFindingAnnotationReturnsEmptyList() {
+        FieldExtractor extractor = new FieldExtractor();
+        List<Field> result = extractor.annotatedFieldsFromType(BasePerson.class, ItemConfig.class);
+
+        assertThat(result, hasSize(0));
+    }
+
+
+    @Test
+    public void test_getAnnotatedConstructorOfType() {
+        FieldExtractor extractor = new FieldExtractor();
+        Constructor<BasePerson> constructor = extractor.findAnnotatedConstructor(BasePerson.class, Data.class);
+
+        assertThat(constructor, is(notNullValue()));
+    }
+
+    @Test
+    public void test_getAnnotatedConstructorOfSupertype() {
+        FieldExtractor extractor = new FieldExtractor();
+        Constructor<EmptyPerson> constructor = extractor.findAnnotatedConstructor(EmptyPerson.class, Data.class);
+
+        assertThat(constructor, is(notNullValue()));
+    }
+
+
+    @Test
+    public void test() throws IllegalAccessException, InvocationTargetException, InstantiationException {
+        FieldExtractor extractor = new FieldExtractor();
+
+        Item item = new ItemBuilder(URI.create("http://somewhere"))
+                                .addData(DataEntryFactory.create("name", "Felipe"))
+                                .addData(DataEntryFactory.create("age", 12))
+                                .addData(DataEntryFactory.create("id", 1234))
+                                .addData(DataEntryFactory.create("isAdmin", true))
+                                .addData(DataEntryFactory.create("someValue", 1.23)).build();
+
+
+
+
+        NullPerson p = extractor.createInstance(NullPerson.class, item.extractDataMap());
+        assertThat(p, is(notNullValue()));
+        assertThat(p.getAge(), is(12));
+    }
+}
